@@ -1,0 +1,180 @@
+# META-LOOP v2.1
+---
+
+## THE PHYSICS
+
+**Pulsar magnetosphere** → Learning system mapping:
+- **Closed field lines** → Pattern optimizes internally
+- **Open field lines** → Pattern graduates to autonomy  
+- **Separatrix** → Effectiveness threshold (escape velocity)
+
+**One equation decides everything:**
+```
+IF E >= V_esc AND A > 0.75:  topology = "open"    # Graduate
+ELIF T > 0.70:               topology = "hybrid"  # Transfer
+ELSE:                        topology = "closed"  # Optimize
+```
+
+Where:
+- `E` = effectiveness = (H_before - H_after) / n_receipts
+- `V_esc` = ESCAPE_VELOCITY[domain]
+- `A` = autonomy = auto_approved / total_actions
+- `T` = transfer = temporal_graph_similarity (NOT cosine)
+
+---
+
+## CONSTANTS (non-negotiable)
+
+```python
+ESCAPE_VELOCITY = {
+    "qed_compression": 0.90,
+    "proofpack_gap": 0.85,
+    "axiom_discovery": 0.88,
+    "meta_transfer": 0.80
+}
+AUTONOMY_THRESHOLD = 0.75
+TRANSFER_THRESHOLD = 0.70
+CASCADE_MULTIPLIER = 5
+CONFIDENCE_FALLBACK = 0.85  # NEW: triggers web search if below
+```
+
+---
+
+## THE CYCLE (8 phases, 60 seconds)
+
+```
+SENSE → ANALYZE → CLASSIFY → HARVEST → HYPOTHESIZE → GATE → ACTUATE → SELECT
+```
+
+| Phase | Input | Output | Receipt |
+|-------|-------|--------|---------|
+| SENSE | Subsystem receipts | Pattern candidates | sense_receipt |
+| ANALYZE | Candidates | Effectiveness metrics | analyze_receipt |
+| CLASSIFY | Metrics + **confidence** | Topology + fallback trigger | topology_receipt |
+| HARVEST | Topologies | Sorted queues | harvest_receipt |
+| HYPOTHESIZE | Queues | Action proposals | hypothesis_receipt |
+| GATE | Proposals | Approved/deferred | gate_receipt |
+| ACTUATE | Approved | Results | actuate_receipt |
+| SELECT | All patterns | Survivors + SUPERPOSITION | selection_receipt |
+
+**NEW: Confidence-Gated Fallback**
+```python
+def classify_with_fallback(pattern: dict) -> tuple[str, bool]:
+    confidence = compute_classification_confidence(pattern)
+    if confidence < CONFIDENCE_FALLBACK:
+        # Trigger external validation before classifying
+        enriched = await_external_context(pattern)  # Web search, temporal graph
+        pattern = merge_context(pattern, enriched)
+    return classify_topology(pattern), confidence >= CONFIDENCE_FALLBACK
+```
+
+---
+
+## ACTIONS BY TOPOLOGY
+
+| Topology | What Happens | Receipt |
+|----------|--------------|---------|
+| **OPEN** | Graduate → spawn CASCADE_MULTIPLIER variants | cascade_receipt |
+| **HYBRID** | Transfer to other domains | transfer_receipt |
+| **CLOSED** | Continue optimizing internally | optimization_receipt |
+
+**Cascade spawning** (when pattern graduates):
+```python
+for i in range(CASCADE_MULTIPLIER):
+    variant = mutate(pattern, rate=0.05)
+    variant = recombine(variant, find_similar_pattern(pattern))
+    if backtest(variant).success_rate >= 0.75:
+        deploy(variant)
+        emit_receipt("cascade", {parent: pattern.id, child: variant.id})
+```
+
+---
+
+## INTEGRATION (one line per system)
+
+```python
+# QED
+topology = META.classify(pattern); META.handle(pattern, topology)
+
+# ProofPack  
+topology = META.classify(helper); META.handle(helper, topology)
+
+# Spaceproof
+if law.compression >= 0.88: META.classify(law); META.handle(law, topology)
+```
+
+---
+
+## RECEIPTS (11 types, emit or die)
+
+| Receipt | Frequency | Key Fields |
+|---------|-----------|------------|
+| sense_receipt | Per cycle | systems_queried, patterns_found |
+| analyze_receipt | Per cycle | effectiveness_computed |
+| topology_receipt | Per pattern | topology, E, V_esc, A, T, **confidence** |
+| harvest_receipt | Per cycle | open_count, closed_count, hybrid_count |
+| hypothesis_receipt | Per cycle | actions_proposed |
+| gate_receipt | Per action | approved, risk_score, approver |
+| actuate_receipt | Per action | action_type, success |
+| selection_receipt | Per cycle | survivors, entropy_delta |
+| cascade_receipt | Per variant | parent_id, child_id, backtest_success |
+| transfer_receipt | Per transfer | source_domain, target_domain, similarity |
+| meta_loop_receipt | Per cycle | cycle_id, phase_results, violations |
+
+---
+
+## SLOs
+
+| Metric | Threshold | Stoprule |
+|--------|-----------|----------|
+| Classification accuracy | ≥95% | Emit violation |
+| Topology assignment | 100% | Emit violation |
+| Cascade spawn | 1-5x multiplier | Emit violation |
+| Entropy conservation | |Δ| < 0.01 | HALT |
+| **Confidence fallback rate** | <20% | Log warning |
+
+---
+
+## DIRECTORY STRUCTURE
+
+```
+meta-loop/
+├── src/
+│   ├── core.py
+│   ├── cycle.py          # 8-phase orchestration
+│   ├── classify.py       # Topology + confidence
+│   ├── cascade.py        # Variant spawning
+│   ├── context.py        # NEW: Fallback enrichment
+│   └── integrate.py      # QED/ProofPack/AXIOM hooks
+├── sim/
+│   └── scenarios.py      # 7 mandatory
+├── tests/
+└── receipts.jsonl
+```
+
+---
+
+## VALIDATION
+
+```bash
+# Phase 1 (immediate)
+python -c "from src.classify import classify_topology; \
+  p={'effectiveness':0.95,'autonomy_score':0.80,'transfer_score':0.60,'domain':'qed_compression'}; \
+  assert classify_topology(p) == 'open'"
+
+# Phase 2 (after approval)
+pytest tests/test_scenarios.py -v
+```
+
+---
+
+## THE PARADIGM SHIFT
+
+**OLD**: Static thresholds decide topology.
+**NEW**: Confidence-gated classification with automatic fallback enrichment.
+
+A pattern isn't just open/closed/hybrid—it's open/closed/hybrid **at a confidence level**. Low confidence triggers context enrichment before decision.
+
+---
+
+*Topology determines fate. Physics decides, not engineers.*

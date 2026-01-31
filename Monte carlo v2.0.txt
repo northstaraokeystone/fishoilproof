@@ -1,0 +1,185 @@
+# MONTE CARLO v2.0
+*From 2034 lines → 120. Prove dynamics, not functions.*
+
+---
+
+## THE PARADIGM
+
+**Unit tests**: Does this function return correct values?
+**Monte Carlo**: Does this system reach stable equilibrium under extreme conditions?
+
+Microscopic correctness + macroscopic correctness = production-ready.
+
+---
+
+## CORE STRUCTURES (minimum viable)
+
+```python
+@dataclass
+class SimConfig:
+    name: str
+    n_cycles: int
+    stress_vectors: list[Callable] = []
+    success_criteria: list[tuple] = []  # (metric, threshold, comparator)
+    random_seed: int = 42
+    early_termination: Callable = None  # NEW: stop on convergence
+
+@dataclass  
+class SimState:
+    cycle: int
+    patterns: dict
+    receipts: list
+    entropy_total: float
+    violations: list
+    converged: bool = False  # NEW: convergence flag
+```
+
+---
+
+## 8 MANDATORY SCENARIOS
+
+| # | Name | Cycles | Pass Criteria |
+|---|------|--------|---------------|
+| 1 | **BASELINE** | 1000 | 99.9% completion, 0 violations |
+| 2 | **STRESS** | 500 | ≥95% accuracy at 5x volume, <5.5GB |
+| 3 | **TOPOLOGY** | 100 | ≥98% classification accuracy |
+| 4 | **CASCADE** | 100 | Exact variant count, all backtest pass |
+| 5 | **COMPRESSION** | 200 | Meta-pattern outperforms both by ≥5% |
+| 6 | **SINGULARITY** | 2000* | Population converges, entropy negative |
+| 7 | **THERMODYNAMIC** | 1000 | \|Δentropy\| < 0.01 every cycle |
+| 8 | **FEEDBACK_LOOP** | 500 | System improves from corrections |
+
+*Early termination on convergence (was 10k).
+
+**NEW: SCENARIO 8 - FEEDBACK_LOOP**
+```python
+feedback = ScenarioConfig(
+    name="FEEDBACK_LOOP",
+    n_cycles=500,
+    stress_vectors=[inject_human_corrections(rate=0.05)],
+    success_criteria=[
+        ("correction_rate_decrease", 0.5, ">="),  # 50% fewer corrections needed
+        ("model_improvement_detected", True, "=="),
+        ("training_examples_produced", 25, ">="),
+        ("reason_codes_captured", True, "==")
+    ]
+)
+```
+**Purpose**: Validate that human corrections → training examples → improved model.
+
+---
+
+## CONSTRAINT VALIDATORS (run every cycle)
+
+| Validator | Condition | Action |
+|-----------|-----------|--------|
+| ConservationValidator | \|entropy_in - (entropy_out + work)\| < 0.01 | HALT |
+| BoundaryValidator | Open patterns meet V_esc | Emit violation |
+| PopulationValidator | Count < max_sustainable | Emit violation |
+| ReceiptValidator | All ops emit receipts | Emit violation |
+| **LearningValidator** | Correction rate decreasing | Emit violation |
+
+---
+
+## EXECUTION (one loop)
+
+```python
+def run_scenario(config: SimConfig) -> SimState:
+    state = initialize(config)
+    random.seed(config.random_seed)
+    
+    for cycle in range(config.n_cycles):
+        state = apply_stress(state, config.stress_vectors)
+        state = execute_cycle(state)  # Uses ACTUAL module code
+        
+        violations = validate_all(state)
+        state.violations.extend(violations)
+        
+        # NEW: Early termination on convergence
+        if config.early_termination and config.early_termination(state):
+            state.converged = True
+            break
+    
+    return evaluate(state, config.success_criteria)
+```
+
+---
+
+## STRESS VECTORS (composable)
+
+```python
+multiply_volume(5.0)           # 5x receipt rate
+vary_effectiveness(0.5, 1.0)   # Random pattern effectiveness
+inject_entropy_noise(0.2)      # ±20% entropy fluctuation
+inject_human_corrections(0.05) # 5% of decisions get corrected
+simulate_policy_drift(0.1)     # 10% policy change mid-run
+```
+
+---
+
+## RECEIPTS
+
+| Receipt | When | Key Fields |
+|---------|------|------------|
+| simulation_run_receipt | Per scenario | config, success, violations |
+| violation_receipt | On failure | constraint, expected, actual |
+| convergence_receipt | On early term | cycle, converged_at, final_state |
+| **learning_receipt** | Per correction | correction_id, training_example_produced |
+
+---
+
+## CLI
+
+```bash
+proof simulate BASELINE              # Single scenario
+proof simulate --all                 # All 8 scenarios
+proof simulate FEEDBACK_LOOP -v      # With verbose
+proof simulate --replay prod.json    # Replay production
+```
+
+---
+
+## RUNTIME
+
+| Scenario | Cycles | Time | Parallel |
+|----------|--------|------|----------|
+| BASELINE | 1000 | 10m | Yes |
+| STRESS | 500 | 8m | Yes |
+| TOPOLOGY | 100 | 2m | Yes |
+| CASCADE | 100 | 3m | Yes |
+| COMPRESSION | 200 | 5m | Yes |
+| SINGULARITY | 2000 | 20m* | No |
+| THERMODYNAMIC | 1000 | 12m | Yes |
+| FEEDBACK_LOOP | 500 | 8m | Yes |
+
+*Reduced from 100m with early termination.
+
+**Total parallel (7 workers)**: ~35 minutes
+
+---
+
+## VALIDATION PROTOCOL
+
+```bash
+# Phase 1 (immediate)
+python -c "from sim.sim import run_scenario; \
+  from sim.scenarios import BASELINE; \
+  r = run_scenario(BASELINE); \
+  assert r.success"
+
+# Phase 2 (after approval)
+proof simulate --all
+```
+
+---
+
+## THE PARADIGM SHIFT
+
+**OLD**: Validate system stability.
+**NEW**: Validate system **learning**.
+
+FEEDBACK_LOOP proves the system improves from human corrections. If correction rate doesn't decrease over 500 cycles, learning is broken.
+
+---
+
+*Correct functions compose into unstable systems. Simulation proves dynamics before deployment.*
