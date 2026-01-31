@@ -1,0 +1,174 @@
+{
+  "version": "1.0",
+  "hash_strategy": {
+    "algorithm": "dual_hash",
+    "format": "SHA256:BLAKE3",
+    "merkle": "BLAKE3"
+  },
+  "ledger": {
+    "file": "receipts.jsonl",
+    "format": "json_lines",
+    "append_only": true
+  },
+  "receipt_types": {
+    "catch_receipt": {
+      "stage": 1,
+      "fields_covered": [1, 2, 3, 13],
+      "schema": {
+        "receipt_type": {"type": "string", "value": "catch"},
+        "ts": {"type": "string", "format": "ISO8601"},
+        "tenant_id": {"type": "string"},
+        "species": {"type": "string"},
+        "species_common": {"type": "string"},
+        "fishery_approved": {"type": "boolean"},
+        "fishery_registry": {"type": "string"},
+        "import_docs_hash": {"type": "string", "format": "dual_hash"},
+        "fishery_cert_type": {"type": "string", "enum": ["MSC", "FriendOfSea", "None"]},
+        "fishery_cert_id": {"type": ["string", "null"]},
+        "fishery_cert_hash": {"type": ["string", "null"], "format": "dual_hash"},
+        "payload_hash": {"type": "string", "format": "dual_hash"},
+        "merkle_root": {"type": "string"}
+      }
+    },
+    "processing_receipt": {
+      "stage": 2,
+      "fields_covered": [4, 5, 6, 7, 14],
+      "schema": {
+        "receipt_type": {"type": "string", "value": "processing"},
+        "ts": {"type": "string", "format": "ISO8601"},
+        "tenant_id": {"type": "string"},
+        "facility_id": {"type": "string"},
+        "facility_name": {"type": "string"},
+        "gmp_cert_type": {"type": "string", "enum": ["NSF", "USP", "Other"]},
+        "gmp_cert_id": {"type": "string"},
+        "gmp_cert_hash": {"type": "string", "format": "dual_hash"},
+        "batch_id": {"type": "string"},
+        "extraction_method": {"type": "string", "enum": ["MolecularDistillation", "Winterization", "SupercriticalCO2"]},
+        "extraction_temp_c": {"type": "number"},
+        "yield_input_kg": {"type": "number"},
+        "yield_output_kg": {"type": "number"},
+        "yield_ratio": {"type": "number"},
+        "yield_expected_min": {"type": "number", "default": 0.12},
+        "yield_expected_max": {"type": "number", "default": 0.18},
+        "yield_status": {"type": "string", "enum": ["NORMAL", "LOW", "HIGH_DILUTION_FLAG"]},
+        "previous_hash": {"type": "string", "format": "dual_hash"},
+        "payload_hash": {"type": "string", "format": "dual_hash"},
+        "merkle_root": {"type": "string"}
+      }
+    },
+    "testing_receipt": {
+      "stage": 3,
+      "fields_covered": [8, 9, 10, 11],
+      "schema": {
+        "receipt_type": {"type": "string", "value": "testing"},
+        "ts": {"type": "string", "format": "ISO8601"},
+        "tenant_id": {"type": "string"},
+        "lab_name": {"type": "string"},
+        "lab_cert_type": {"type": "string", "enum": ["ISO17025", "Other"]},
+        "lab_cert_id": {"type": "string"},
+        "lab_cert_hash": {"type": "string", "format": "dual_hash"},
+        "batch_id": {"type": "string"},
+        "contaminants": {
+          "type": "object",
+          "properties": {
+            "mercury_ppm": {"type": "number", "limit": 0.1},
+            "mercury_pass": {"type": "boolean"},
+            "pcbs_ppm": {"type": "number", "limit": 0.09},
+            "pcbs_pass": {"type": "boolean"},
+            "dioxins_pg_per_g": {"type": "number", "limit": 3.0},
+            "dioxins_pass": {"type": "boolean"},
+            "all_pass": {"type": "boolean"}
+          }
+        },
+        "potency": {
+          "type": "object",
+          "properties": {
+            "epa_mg": {"type": "number"},
+            "dha_mg": {"type": "number"},
+            "total_omega3_mg": {"type": "number"},
+            "label_claim_mg": {"type": "number"},
+            "potency_pass": {"type": "boolean"}
+          }
+        },
+        "oxidation": {
+          "type": "object",
+          "properties": {
+            "peroxide_meq_per_kg": {"type": "number", "limit": 5.0},
+            "anisidine": {"type": "number", "limit": 20.0},
+            "totox": {"type": "number", "limit": 26.0},
+            "oxidation_pass": {"type": "boolean"}
+          }
+        },
+        "overall_pass": {"type": "boolean"},
+        "previous_hash": {"type": "string", "format": "dual_hash"},
+        "payload_hash": {"type": "string", "format": "dual_hash"},
+        "merkle_root": {"type": "string"}
+      }
+    },
+    "encapsulation_receipt": {
+      "stage": 4,
+      "fields_covered": [],
+      "schema": {
+        "receipt_type": {"type": "string", "value": "encapsulation"},
+        "ts": {"type": "string", "format": "ISO8601"},
+        "tenant_id": {"type": "string"},
+        "facility_id": {"type": "string"},
+        "facility_name": {"type": "string"},
+        "facility_cert_type": {"type": "string", "enum": ["NSF", "USP", "Other"]},
+        "facility_cert_id": {"type": "string"},
+        "facility_cert_hash": {"type": "string", "format": "dual_hash"},
+        "lot_number": {"type": "string"},
+        "fill_date": {"type": "string", "format": "ISO8601"},
+        "batch_id": {"type": "string"},
+        "capsule_count": {"type": "integer"},
+        "mg_per_capsule": {"type": "number"},
+        "previous_hash": {"type": "string", "format": "dual_hash"},
+        "payload_hash": {"type": "string", "format": "dual_hash"},
+        "merkle_root": {"type": "string"}
+      }
+    },
+    "distribution_receipt": {
+      "stage": 5,
+      "fields_covered": [12, 15],
+      "schema": {
+        "receipt_type": {"type": "string", "value": "distribution"},
+        "ts": {"type": "string", "format": "ISO8601"},
+        "tenant_id": {"type": "string"},
+        "distributor_id": {"type": "string"},
+        "distributor_name": {"type": "string"},
+        "warehouse_id": {"type": "string"},
+        "warehouse_location": {"type": "string"},
+        "lot_number": {"type": "string"},
+        "cold_chain": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "avg_temp_c": {"type": ["number", "null"]},
+            "min_temp_c": {"type": ["number", "null"]},
+            "max_temp_c": {"type": ["number", "null"]},
+            "duration_days": {"type": "integer"},
+            "deviations_count": {"type": "integer"},
+            "temp_log_hash": {"type": ["string", "null"], "format": "dual_hash"},
+            "cold_chain_pass": {"type": "boolean"}
+          }
+        },
+        "previous_hash": {"type": "string", "format": "dual_hash"},
+        "payload_hash": {"type": "string", "format": "dual_hash"},
+        "merkle_root": {"type": "string"}
+      }
+    },
+    "anomaly_receipt": {
+      "stage": "any",
+      "schema": {
+        "receipt_type": {"type": "string", "value": "anomaly"},
+        "ts": {"type": "string", "format": "ISO8601"},
+        "tenant_id": {"type": "string"},
+        "anomaly_type": {"type": "string", "enum": ["YIELD_HIGH", "YIELD_LOW", "LABEL_FRAUD", "COLD_CHAIN_DEGRADATION", "CONTAMINANT_EXCEED"]},
+        "severity": {"type": "string", "enum": ["WARNING", "FLAG", "REJECT"]},
+        "source_receipt_hash": {"type": "string"},
+        "details": {"type": "object"},
+        "payload_hash": {"type": "string", "format": "dual_hash"}
+      }
+    }
+  }
+}
